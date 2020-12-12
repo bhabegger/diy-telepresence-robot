@@ -1,3 +1,5 @@
+![alt-text](https://repository-images.githubusercontent.com/320909227/d9cbbb00-3cca-11eb-8cd5-e20b52caeab4)
+
 # DIY Telepresence Robot
 
 This project is the codebase for a DIY telepresence robot based on the Robot 2WD Car kit using an Arduino UNO in combination with an ESP32-Cam
