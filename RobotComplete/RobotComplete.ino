@@ -2,8 +2,8 @@
 #include<Wire.h>
 #include "Wheel.h"
 
-#define SPEED_SLOW 155
-#define SPEED_INCR 25
+#define SPEED_SLOW 100
+#define SPEED_INCR 20
 #define SPEED_MAX  255
 
 // Command I2C slave connection
@@ -22,7 +22,7 @@ Wheel leftWheel(wheelLeftForward, wheelLeftBackward, wheelLeftSpeed, 100);
 const int wheelRightSpeed    =  3;
 const int wheelRightForward  = 2;
 const int wheelRightBackward = 4;
-Wheel rightWheel(wheelRightForward, wheelRightBackward, wheelRightSpeed, 80);
+Wheel rightWheel(wheelRightForward, wheelRightBackward, wheelRightSpeed, 85);
 
 // Head servo
 Servo servo;
@@ -126,14 +126,16 @@ void testOneWheel(Wheel wheel) {
 }
 
 void loop() {
-    int distance = checkSonar();
-    if(0 <distance && distance < 25) {
-        sprintf(message, "Sonar check gave short distance (%d). Halting.",distance);
-        Serial.println(message);
-        halt();
+    if(direction > 0) {
+        int distance = checkSonar();
+        if(0 <distance && distance < 25) {
+            sprintf(message, "Sonar check gave short distance (%d). Halting.",distance);
+            Serial.println(message);
+            halt();
 
-        if(autoPilot) {
-            autoAdjustDirection();
+            if(autoPilot) {
+                autoAdjustDirection();
+            }
         }
     }
     if(command[0] != 0) {
@@ -274,15 +276,29 @@ void halt() {
 
 void forward() {
     delay(100);
-    direction = 255;
     angle = 0;
+    if (direction <= 0) {
+        direction = SPEED_SLOW;
+    } else {
+        direction += SPEED_INCR;
+    }
+    if(direction > SPEED_MAX) {
+        direction = SPEED_MAX;
+    }
     adjustWheels();
 }
 
 void backward() {
     delay(100);
-    direction = -155;
     angle = 0;
+    if (direction >= 0) {
+        direction = -SPEED_SLOW;
+    } else {
+        direction -= SPEED_INCR;
+    }
+    if(direction < - SPEED_MAX) {
+        direction = - SPEED_MAX;
+    }
     adjustWheels();
 }
 
@@ -326,19 +342,19 @@ void adjustWheels() {
         Serial.print("rightSpeed=");    Serial.print(speedRight);
         Serial.println();
 
-        if(direction == 0) {
-            leftWheel.stop();
-        } else if(speedLeft > 0) {
-            leftWheel.forward(speedLeft);
-        } else {
-            leftWheel.backward(-1 * speedLeft);
-        }
         if(speedRight == 0) {
             rightWheel.stop();
         } else if(speedRight > 0) {
             rightWheel.forward(speedRight);
         } else {
             rightWheel.backward(-1 * speedRight);
+        }
+        if(direction == 0) {
+            leftWheel.stop();
+        } else if(speedLeft > 0) {
+            leftWheel.forward(speedLeft);
+        } else {
+            leftWheel.backward(-1 * speedLeft);
         }
     }
 }
